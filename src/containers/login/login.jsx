@@ -1,10 +1,13 @@
 import React, {Component} from 'react';
-import { Form, Icon, Input, Button,message} from 'antd';
-import axios from 'axios';
+import { Form, Icon, Input, Button} from 'antd';
+import {reqLogin} from '../../api';
+import {connect} from 'react-redux';
+import { getUserAsync } from '../../redux/action-creators/user';
 import logo from './logo.png';
 import './login.less';
 
-
+@connect(null,{getUserAsync})
+/*ui组件*/
 class Login extends Component {
   /*
   自定义效验规则
@@ -32,23 +35,24 @@ class Login extends Component {
   * */
   login = e => {
     e.preventDefault();
-    this.props.form.validateFields((err, values) => {
-      console.log(err);
+    // validateFields  效验并收集表单数据
+    const {form} = this.props;
+    form.validateFields((err, values) => {
+      // console.log(err);
+
       if (!err) {
-        console.log('Received values of form: ', values);
-        axios.post("http://localhost:5000/api/login",values)
+        // console.log('Received values of form: ', values);
+        const {username, password} = values;
+        // axios.post("http://47.103.203.152/api/login",values)
+        this.props.getUserAsync(username, password)
           .then((response) =>{
             console.log(response);
-            if (response.data.status === 0) {
-              // 登录成功
-              this.props.history.push('/');
-            }else {
-              message.error(response.data.msg);
-              this.props.form.resetFields(['password'])
-            }
+            // 跳转网址
+            this.props.history.push('/');
           })
           .catch((err) =>{
-            console.log(err);
+            // 清空密码
+            form.resetFields(['password'])
           })
       }
 
@@ -106,5 +110,8 @@ class Login extends Component {
     );
   }
 }
+
+/*容器组件*/
+
 
 export default Form.create()(Login);

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<button id="btn1">btn1</button>
+<button id="btn2">btn2</button>
+<button id="btn3">btn3</button>
+<script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script>
+
+<script>
+  const btn1 = document.getElementById('btn1');
+  const btn2 = document.getElementById('btn2');
+  const btn3 = document.getElementById('btn3');
+
+  let token = '';
+
+  const axiosInstance = axios.create({
+    baseURL: 'http://localhost:5000/api',   // 公共的请求路径
+    timeout: 10000,   // 请求超过10秒，中断请求
+    headers:{
+      // 公共的请求头参数
+    }
+  });
+
+  // 拦截器
+
+  // 请求拦截器：在axios发送请求之前触发的拦截器回调
+  axiosInstance.interceptors.request.use(
+    // 将要发送的请求是成功的(内部没有错)触发的回调
+    (config) =>{
+      console.log(config);
+      if (config.method === 'post') {
+        config.headers['content-type'] = 'application/x-www-form-urlencoded';
+
+        config.data = Object.keys(config.data).reduce((prev, key) =>{
+          const value = config.data[key];
+          return prev + `&${key}=${value}`;
+        },'').substring(1);
+      }
+
+      if (token) {
+        config.headers.authorization = 'Bearer ' + token;
+      }
+      return config;
+    },
+    // 将要发送的请求是失败的(内部有错)触发的回调
+    () =>{
+
+    }
+  );
+
+
+  btn1.addEventListener('click', function () {
+    axiosInstance({
+      method: 'POST',
+      url: '/login',
+      data: {
+        username: 'admin',
+        password: 'admin'
+      },
+      // data: 'username=admin&password=admin',
+      // headers: {
+      //   'content-type': 'application/x-www-form-urlencoded'
+      // }
+    })
+      .then((response) =>{
+        // console.log(response);
+        if (response.data.status === 0) {
+          // 登录成功
+          console.log(response.data.data);
+          // 设置token
+          token = response.data.data.token;
+        }else {
+          // 登录失败
+          console.log(response.data.msg);
+        }
+      })
+      .catch((err) =>{
+        console.log(err);
+        alert('网络出现文题1');
+      })
+  });
+
+  btn2.addEventListener('click', function () {
+    axiosInstance({
+      method: 'GET',
+      url: '/category/get',
+      // headers: {
+      //   authorization: 'Bearer ' + token
+      // }
+    })
+      .then((response) =>{
+        if (response.data.status === 0) {
+          // 获取成功
+          console.log(response.data.data);
+        }else {
+          // 获取失败
+          console.log(response.data.msg);
+        }
+      })
+      .catch((err) =>{
+        console.log(err);
+        alert('网络错误，请重试');
+      })
+  });
+
+  btn3.addEventListener('click', function () {
+    axiosInstance({
+      method: 'POST',
+      url: '/category/add',
+      // headers:{
+      //   'content-type': 'application/x-www-form-urlencoded',
+      //   authorization: 'Bearer ' + token
+      // },
+      data:{
+        categoryName: '电脑'
+      }
+      // data: 'categoryName=电脑'
+    })
+      .then((response) =>{
+        if (response.data.status === 0) {
+          // 添加成功
+          console.log(response.data.data);
+        }else {
+          // 添加失败
+          console.log(response.data.msg);
+        }
+      })
+      .catch((err) =>{
+        console.log(err);
+        alert('网络错误，请重试')
+      })
+  })
+</script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<button id="btn1">btn1</button>
+<button id="btn2">btn2</button>
+<button id="btn3">btn3</button>
+<script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script>
+
+<script>
+  const btn1 = document.getElementById('btn1');
+  const btn2 = document.getElementById('btn2');
+  const btn3 = document.getElementById('btn3');
+
+  let token = '';
+
+  const axiosInstance = axios.create({
+    baseURL: 'http://localhost:5000/api',   // 公共的请求路径
+    timeout: 10000,   // 请求超过10秒，中断请求
+    headers:{
+      // 公共的请求头参数
+    }
+  });
+
+  // 拦截器
+
+  // 请求拦截器：在axios发送请求之前触发的拦截器回调
+  axiosInstance.interceptors.request.use(
+    // 将要发送的请求是成功的(内部没有错)触发的回调
+    (config) =>{
+      console.log(config);
+      if (config.method === 'post') {
+        config.headers['content-type'] = 'application/x-www-form-urlencoded';
+
+        config.data = Object.keys(config.data).reduce((prev, key) =>{
+          const value = config.data[key];
+          return prev + `&${key}=${value}`;
+        },'').substring(1);
+      }
+
+      if (token) {
+        config.headers.authorization = 'Bearer ' + token;
+      }
+      return config;
+    },
+    // 将要发送的请求是失败的(内部有错)触发的回调
+    () =>{
+
+    }
+  );
+
+  // 响应拦截器
+  axiosInstance.interceptors.response.use(
+    //  响应成功触发的回调函数
+    //  响应成功，用户设置回调函数之前触发
+    (response) =>{
+      // console.log(response);
+      // 响应成功
+      if (response.data.status === 0) {
+        return response.data.data;
+      }else {
+        // 响应失败
+        alert(response.data.msg);
+        return Promise.reject(response.data.msg);
+      }
+    },
+    // 响应失败触发的回调函数
+    (error) =>{
+      console.dir(error);
+      console.log(error.response);
+      const codeMsg = {
+        401:'没有权限',
+        403:'禁止访问',
+        404:'资源不存在',
+        500:'服务器故障'
+      };
+      let errMsg = '';
+      if (error.response) {
+        errMsg = codeMsg[error.response.status] || '未知错误';
+      }else {
+        if (error.message.indexOf('Network Error') !== -1) {
+          errMsg = '请检查网络连接';
+        }else if (error.message.indexOf('timeout') !== -1) {
+          errMsg = '网络太卡了，请连上wifi重试';
+        }else {
+          errMsg = '未知错误';
+        }
+      }
+      alert(errMsg);
+      return Promise.reject(errMsg);
+    }
+  );
+
+  // 登录
+  const reqLogin = (username,password) =>{
+    return axiosInstance({
+      method: 'POST',
+      url: '/login',
+      data: {
+        username,
+        password
+      },
+    })
+  };
+
+  //
+  const reqGetCategories = () =>{
+    return axiosInstance({
+      method: 'GET',
+      url: '/category/get',
+    })
+  };
+
+  //
+  const reqAddCategory = (categoryName) =>{
+    return axiosInstance({
+      method: 'POST',
+      url: '/category/add',
+      data:{
+        categoryName
+      }
+    })
+  };
+
+  btn1.addEventListener('click', function () {
+    reqLogin('admin','admin')
+      .then((response) => {
+        // console.log(response);
+        //   if (response.data.status === 0) {
+        //     // 登录成功
+        //     console.log(response.data.data);
+        //     // 设置token
+        //     token = response.data.data.token;
+        //   }else {
+        //     // 登录失败
+        //     console.log(response.data.msg);
+        //   }
+        // })
+        // .catch((err) =>{
+        //   console.log(err);
+        //   alert('网络出现文题1');
+        // })
+        token = response.token;
+      })
+  });
+
+  btn2.addEventListener('click', function () {
+    reqGetCategories()
+      .then((response) => {
+        //   if (response.data.status === 0) {
+        //     // 获取成功
+        //     console.log(response.data.data);
+        //   }else {
+        //     // 获取失败
+        //     console.log(response.data.msg);
+        //   }
+        // })
+        // .catch((err) =>{
+        //   console.log(err);
+        //   alert('网络错误，请重试');
+        // })
+        console.log(response);
+      })
+  });
+
+  btn3.addEventListener('click', function () {
+    reqAddCategory('电脑')
+      .then((response) => {
+        //   if (response.data.status === 0) {
+        //     // 添加成功
+        //     console.log(response.data.data);
+        //   }else {
+        //     // 添加失败
+        //     console.log(response.data.msg);
+        //   }
+        // })
+        // .catch((err) =>{
+        //   console.log(err);
+        //   alert('网络错误，请重试')
+        // })
+        console.log(response);
+      })
+  })
+</script>
+</body>
+</html>
