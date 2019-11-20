@@ -1,5 +1,6 @@
 import React from 'react';
 import routers from './config/routers';
+import './index.less';
 
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 
