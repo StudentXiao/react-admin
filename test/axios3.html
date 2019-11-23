@@ -58,11 +58,11 @@
     //  响应成功，用户设置回调函数之前触发
     (response) =>{
       // console.log(response);
-      // 响应成功
+      // 返回成功的数据
       if (response.data.status === 0) {
         return response.data.data;
       }else {
-        // 响应失败
+        // 功能失败
         alert(response.data.msg);
         return Promise.reject(response.data.msg);
       }

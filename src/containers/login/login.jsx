@@ -1,12 +1,16 @@
 import React, {Component} from 'react';
 import { Form, Icon, Input, Button} from 'antd';
-import {reqLogin} from '../../api';
+// import {reqLogin} from '../../api';
 import {connect} from 'react-redux';
 import { getUserAsync } from '../../redux/action-creators/user';
+import {setItem} from '../../utils/storage';
+import checkLogin from '../with-check-login/checkLogin';
 import logo from './logo.png';
 import './login.less';
 
+@checkLogin
 @connect(null,{getUserAsync})
+@Form.create()
 /*ui组件*/
 class Login extends Component {
   /*
@@ -47,6 +51,8 @@ class Login extends Component {
         this.props.getUserAsync(username, password)
           .then((response) =>{
             console.log(response);
+            //持久化存储用户数据
+            setItem("user",response);
             // 跳转网址
             this.props.history.push('/');
           })
@@ -114,4 +120,4 @@ class Login extends Component {
 /*容器组件*/
 
 
-export default Form.create()(Login);
+export default Login;
