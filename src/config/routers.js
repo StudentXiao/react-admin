@@ -1,5 +1,6 @@
 import Home from '../components/home/index';
 import Login from '../containers/login/login';
+import Category from '../containers/category/category';
 import NotMatch from '../components/not-match/index';
 
 
@@ -8,6 +9,11 @@ const authRoutes = [
   {
     path: '/',
     component: Home,
+    exact: true
+  },
+  {
+    path: '/category',
+    component: Category,
     exact: true
   },
   {

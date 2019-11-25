@@ -1,12 +1,19 @@
 
 import {reqLogin} from "../../api";
 import {GET_USER_SUCCESS} from '../action-types/user';
+import {REMOVE_USER_SUCCESS} from '../action-types/user';
 
 // 同步
 const getUserSuccess = (user) =>{
   return {
     type: GET_USER_SUCCESS,
     data: user
+  }
+};
+
+export const removeUserSuccess = () =>{
+  return {
+    type: REMOVE_USER_SUCCESS
   }
 };
 

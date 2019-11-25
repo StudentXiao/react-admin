@@ -4,10 +4,16 @@
 
 import axios from 'axios';
 import {message} from 'antd';
+import store from '../redux/store';
 import codeMsg from '../config/codeMsg';
+import {removeItem} from "../utils/storage";
+import history from '../utils/history';
+import {removeUserSuccess} from "../redux/action-creators/user";
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5000/api',   // 公共的请求路径
+  // http://47.103.203.152
+  // http://localhost:5000
+  baseURL: 'http://47.103.203.152/api',   // 公共的请求路径
   timeout: 10000,   // 请求超过10秒，中断请求
   headers:{
     // 公共的请求头参数
@@ -29,7 +35,7 @@ axiosInstance.interceptors.request.use(
         return prev + `&${key}=${value}`;
       },'').substring(1);
     }
-    const token = '';
+    const {user:{token}} = store.getState();
     if (token) {
       config.headers.authorization = 'Bearer ' + token;
     }
@@ -65,6 +71,15 @@ axiosInstance.interceptors.response.use(
     let errMsg = '';
     if (error.response) {
       errMsg = codeMsg[error.response.status] || '未知错误';
+
+      if (error.response.status === 401) {
+        // 说明token 有问题
+        // 清空本地token（localStorage、redux） 重定向到 /login
+        // 一定先清空数据，在跳转
+        removeItem();
+        store.dispatch(removeUserSuccess());
+        history.push('/login');
+      }
     }else {
       if (error.message.indexOf('Network Error') !== -1) {
         errMsg = '请检查网络连接';

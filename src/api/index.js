@@ -15,3 +15,11 @@ export const reqLogin = (username,password) =>{
     },
   })
 };
+
+// 请求分类列表
+export const reqGetCategories = () =>{
+  return axiosInstance({
+    method: 'GET',
+    url: '/category/get'
+  })
+};
